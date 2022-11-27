@@ -19,12 +19,14 @@ LEFT JOIN track t ON t.id_album = a.id
 GROUP BY a.name;
 
 *************************
-
 SELECT a.name
+FROM artists a
+WHERE a.name NOT IN 
+(SELECT a.name
 FROM artists a
 LEFT JOIN artists_album m ON a.id = m.artists_id
 LEFT JOIN album b ON m.album_id = b.id
-WHERE b.date_creation < '2020-01-01';
+WHERE b.date_creation BETWEEN '2020-01-01' AND '2020-12-31') ;
 
 ************************
 
@@ -65,7 +67,12 @@ LEFT JOIN track t ON t.id = at.track_id
 WHERE t.duration = (SELECT min(duration) FROM track); 
 
 ***********************
-SELECT name FROM album
-WHERE id = (SELECT album_id
-FROM album_track 
-ORDER BY album_id DESC limit 1);
+SELECT album.name album, COUNT(Track.name) track_count FROM album 
+JOIN track ON album.id = track.album_id
+GROUP BY album.name
+HAVING COUNT(track.name) = (  
+    SELECT COUNT(track.name) FROM album
+    JOIN track ON album.id = track.album_id
+    GROUP BY album.name
+    ORDER BY COUNT(track.name)
+    LIMIT 1);
